@@ -4,7 +4,7 @@ A Claude skill that scales recipes by exact fractional arithmetic.
 
 ## Walkthrough video
 
-Video: *[link to be added]*
+Video: https://youtu.be/wq8lUhXBWjQ
 
 ## What this skill does
 
