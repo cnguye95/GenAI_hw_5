@@ -1,0 +1,42 @@
+TEST: Edge case — pan size change with non-integer egg result
+
+USER PROMPT
+-----------
+Convert this 9x13 brownie recipe to fit an 8x8 pan:
+2 cups sugar, 1 cup butter, 4 eggs, 1 cup cocoa, 1 1/2 cups flour,
+1 tsp baking powder, 1/2 tsp salt, 2 tsp vanilla.
+
+EXPECTED BEHAVIOR
+-----------------
+- The model parses the recipe and sets scale.mode="pan",
+  from_pan=[9,13], to_pan=[8,8].
+- The script computes factor = (8*8) / (9*13) = 64/117 ≈ 0.547.
+- The model presents the scaled recipe AND the bake-time note.
+
+EXPECTED VALUES
+---------------
+- scale_factor:    "64/117 (~0.5470)"
+- sugar:           1 1/8 cup       (2 * 64/117 = 128/117 ≈ 1.094 → rounds to 1 1/8)
+- butter:          1/2 cup         (64/117 ≈ 0.547 → rounds to 1/2)
+- large eggs:      2               (4 * 64/117 = 256/117 ≈ 2.188 → rounds to 2,
+                                    delta ≈ 0.188 ≥ 0.15, so a per-ingredient note is added)
+- cocoa:           1/2 cup
+- flour:           7/8 cup         (3/2 * 64/117 = 32/39 ≈ 0.821)
+- baking powder:   1/2 tsp         (64/117 ≈ 0.547)
+- salt:            1/4 tsp         (1/2 * 64/117 = 32/117 ≈ 0.274)
+- vanilla:         1 1/8 tsp       (2 * 64/117 = 128/117 ≈ 1.094)
+
+EXPECTED WARNINGS
+-----------------
+- Egg-rounding warning (because the egg count rounded with delta ≥ 0.15).
+- Bake-time adjustment warning (because mode == "pan", always added).
+- NO leavening warning (factor < 2.0).
+- NO salt warning (factor < 2.5).
+- NO reliability warning (0.547 is in the 0.2–5x range).
+
+WHAT THE GRADER SHOULD SEE
+--------------------------
+The factor displayed as a fraction with a decimal approximation. Eggs go to 2
+with a per-ingredient note that the original 4 was scaled to ~2.19. The model
+should mention bake time will need adjusting and that a smaller, deeper pan
+generally bakes longer.

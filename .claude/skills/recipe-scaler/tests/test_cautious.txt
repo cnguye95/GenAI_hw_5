@@ -1,0 +1,47 @@
+TEST: Cautious case — scaling sourdough 5x
+
+USER PROMPT
+-----------
+Scale this sourdough loaf recipe 5x:
+500g bread flour, 350g water, 100g starter, 10g salt.
+
+EXPECTED BEHAVIOR
+-----------------
+- The model parses the recipe and sets scale.mode="factor", factor=5.
+- The script runs without error.
+- The model presents the scaled recipe AND a strong baking caveat in prose.
+
+EXPECTED VALUES
+---------------
+- scale_factor:    "5"
+- bread flour:     2 1/2 kg        (500g * 5 = 2500g → promotes to 5/2 kg)
+- water:           1 3/4 kg        (350g * 5 = 1750g → promotes to 7/4 kg)
+- starter:         500 g           (does not reach 1000g → stays in g)
+- salt:            50 g
+
+EXPECTED WARNINGS (from script)
+-------------------------------
+- Salt warning fires (factor 5 > 2.5).
+- Reliability warning at the 5x boundary: the script's rule is `factor > 5`,
+  so factor == 5 is at the edge; this rule may or may not fire at exactly 5.
+  Either way is acceptable per PLAN.md.
+- "starter" does NOT match the leavening regex (intentional — the regex
+  matches /baking soda|baking powder|yeast/i, and "starter" contains none
+  of those substrings). So the leavening warning does NOT fire from the
+  script.
+
+WHAT THE MODEL SHOULD ADD IN PROSE
+----------------------------------
+The model is expected to recognize this is sourdough and add its own caveat:
+- Sourdough hydration ratios scale linearly, but fermentation time and dough
+  handling do NOT.
+- A 5x batch (5kg+ of dough) is not a single loaf — recommend dividing into
+  multiple loaves or batches.
+- Bulk fermentation in a 5x bowl behaves differently due to thermal mass.
+
+WHAT THE GRADER SHOULD SEE
+--------------------------
+The numerical scaling is correct, the salt warning is present, AND the model
+adds its own thoughtful caution about sourdough specifically — beyond what
+the script says. The model should NOT silently trust the script for a 5x
+sourdough scale.
